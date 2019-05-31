@@ -8,13 +8,18 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.effect.BlurType;
+import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.paint.Color;
 
 public class Main extends Application {
+	
+	int numOfImages = 43;
 	
 	GridPane gridGalleryPane;
 	HBox bigImagePane;
@@ -22,11 +27,11 @@ public class Main extends Application {
 	BorderPane borderPaneBase;
 	Scene scene;
 	Stage stageMain;
-	Image imageList[] = new Image[26];
-	ImageView imageGalleryNodeList[] = new ImageView[26];
-	ImageView imageLargeNodeList[] = new ImageView[26];
-	String[] imageInfoStrings = new String[26];
-	Label[] imageInfoLabels = new Label[26];
+	Image imageList[] = new Image[numOfImages];
+	ImageView imageGalleryNodeList[] = new ImageView[numOfImages];
+	ImageView imageLargeNodeList[] = new ImageView[numOfImages];
+	String[] imageInfoStrings = new String[numOfImages];
+	Label[] imageInfoLabels = new Label[numOfImages];
 	File imageFiles;
 	int gridStartIndex = 0;
 	int gridLastNodeIndex;
@@ -39,26 +44,45 @@ public class Main extends Application {
 			
 			stageMain = stage;
 			
-			for (int i = 0; i < 26; i++){
+			//Instantiating the Shadow class 
+		    DropShadow dropShadow = new DropShadow(); 
+		    //setting the type of blur for the shadow 
+		    dropShadow.setBlurType(BlurType.GAUSSIAN); 
+		    //Setting colour for the shadow 
+		    dropShadow.setColor(Color.BLACK); 
+		    //Setting the height of the shadow
+		    dropShadow.setHeight(5); 
+		    //Setting the width of the shadow 
+		    dropShadow.setWidth(5); 
+		    //Setting the radius of the shadow 
+		    dropShadow.setRadius(5); 
+		    //setting the offset of the shadow 
+		    dropShadow.setOffsetX(3); 
+		    dropShadow.setOffsetY(2); 
+		    //Setting the spread of the shadow 
+		    dropShadow.setSpread(12); 
+			
+			for (int i = 0; i < numOfImages; i++){
 				//Folder "image" is in project folder
-				imageFiles = new File("images/"+i+".jpg");
+				imageFiles = new File("images/"+i+".png");
 				imageList[i] = new Image("file:"+imageFiles.getAbsolutePath());
 				
 				//Create list of ImageView nodes of size 100x100 for image gallery
 				imageGalleryNodeList[i] = new ImageView(imageList[i]);
-				imageGalleryNodeList[i].setPreserveRatio(false);
+				imageGalleryNodeList[i].setPreserveRatio(true);
 				imageGalleryNodeList[i].setFitWidth(150);
 				imageGalleryNodeList[i].setFitHeight(150);
 				
 				//Create list of ImageView nodes with image ratio preserved and 300 width
 				imageLargeNodeList[i] = new ImageView(imageList[i]);
 				imageLargeNodeList[i].setPreserveRatio(true);
-				imageLargeNodeList[i].setFitWidth(300);
+				imageLargeNodeList[i].setFitHeight(300);
+				imageLargeNodeList[i].setEffect(dropShadow);
 				
 				//Create image information for each image
 				imageInfoStrings[i] = ("This is image number: "+i);
 				imageInfoLabels[i] = new Label(imageInfoStrings[i]);
-				imageInfoLabels[i].setStyle("-fx-font-size: 20; -fx-text-fill: Black;");
+				imageInfoLabels[i].setStyle("-fx-font-size: 10; -fx-text-fill: Black;");
 			}
 			
 			//Button for showing next gallery selection or next slide
@@ -72,9 +96,9 @@ public class Main extends Application {
 			prev.setStyle("-fx-font-size: 15; -fx-text-fill: Black;");
 			
 			//Button for starting the slide show from the first image
-			Button slideShow = new Button();
-			slideShow.setText("SlideShow");
-			slideShow.setStyle("-fx-font-size: 15; -fx-text-fill: Black;");
+			Button singleImage = new Button();
+			singleImage.setText("Single Image");
+			singleImage.setStyle("-fx-font-size: 15; -fx-text-fill: Black;");
 			
 			//Button to return to the image gallery from the slide show
 			Button imgGal = new Button();
@@ -83,17 +107,19 @@ public class Main extends Application {
 			imgGal.setDisable(true);
 			
 			
-			
 			//Setup and add buttons to control bar
 			controlBar = new HBox();
 			controlBar.setSpacing(20);
-			controlBar.getChildren().addAll(next, prev, slideShow, imgGal);
+			controlBar.getChildren().addAll(prev, next, singleImage, imgGal);
 			
 			//Create grid pane for image gallery image nodes
 			gridGalleryPane = new GridPane();
 			gridGalleryPane.setAlignment(Pos.CENTER);
 			gridGalleryPane.setVgap(15);
 			gridGalleryPane.setHgap(15);
+			gridGalleryPane.setCenterShape(true);
+			gridGalleryPane.setEffect(dropShadow);
+			
 			//Call fill grid function to add first nine image to grid
 			fillGrid(gridStartIndex);
 			
@@ -113,8 +139,6 @@ public class Main extends Application {
 			borderPaneBase = new BorderPane();
 			borderPaneBase.setBottom(controlBar);
 			borderPaneBase.setCenter(gridGalleryPane);
-			//borderPaneBase.setTop(ph1);
-			//borderPaneBase.setLeft(ph2);
 			
 			//Initialise scene and add to stage
 			scene = new Scene(borderPaneBase,800,600);
@@ -144,17 +168,17 @@ public class Main extends Application {
 				}
 			});
 			
-			slideShow.setOnAction(e->{
+			singleImage.setOnAction(e->{
 				currentSlideNode = 0;
 				enterSlideShow(currentSlideNode);
-				slideShow.setDisable(true);
+				singleImage.setDisable(true);
 				imgGal.setDisable(false);
 			});
 			
 			imgGal.setOnAction(e->{
 				inSlideShow = false;
 				borderPaneBase.setCenter(gridGalleryPane);
-				slideShow.setDisable(false);
+				singleImage.setDisable(false);
 				imgGal.setDisable(true);
 				borderPaneBase.setRight(null);
 			});
@@ -166,11 +190,11 @@ public class Main extends Application {
 			        int rowIndex = GridPane.getRowIndex(node);
 			        gridNodeIndex = getGirdNum(colIndex, rowIndex);
 			        enterSlideShow(gridStartIndex+gridNodeIndex);
-			        slideShow.setDisable(true);
+			        singleImage.setDisable(true);
 					imgGal.setDisable(false);
 			    }
 			});
-			
+		
 		}catch(Exception e) {
 			e.printStackTrace();
 		}
